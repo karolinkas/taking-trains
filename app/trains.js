@@ -7,6 +7,9 @@ class TripPlanner {
         this.parseConnectionStrings();
     }
 
+    /**
+    * Take strings of city codes and distances and create and array of objects for all connections 
+    */
     parseConnectionStrings () {
         this.connectionList = this.connectionsStrings.map(string => {
             const startCity = string[0];
@@ -45,6 +48,7 @@ class TripPlanner {
 
         let totalDistance = 0;
         cityPair.forEach(pair => {
+            //find distance in list of all connections
             this.connectionList.find(departure => {
                 if (departure.from === pair[0] && departure.to === pair[1]){
                     totalDistance += departure.distance;
@@ -61,12 +65,49 @@ class TripPlanner {
     }
 
     findShortestTrip (route){
+        //const cache = new TripCache();
+        /**
+        * Since we don't know what the stops in between are we just 
+        * have an start and an end city
+        */
+        const start = route[0];
+        const end = route[1];
+
+        const departingCities = [];
+        const arrivingCities = [];
+        this.connectionList.forEach(connection => {
+            if (connection.from === start){
+                departingCities.push(connection);
+            } else if (connection.to === end){
+                arrivingCities.push(connection);
+            }
+        });
+
+        const distances = [];
+        departingCities.forEach((city, i) => {
+            arrivingCities.forEach(arrivalCity => {
+                if (city.to === arrivalCity.from){
+                    distances.push(city.distance + arrivalCity.distance);
+                }
+            });
+        });
+        
+        return Math.min(...distances);
 
     }
 
     findConnections (route){
 
     }
+}
+
+class TripCache {
+    constructor (){
+        this.table = [{city: "A", distance: 0, visited: false}];
+
+    }
+
+    
 }
 
 /* const trainConnections = ["AB5", "BC4", "CD8", "DC8", "DE6", "AD5", "CE2", "EB3", "AE7"];

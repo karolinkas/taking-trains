@@ -53,8 +53,6 @@ describe("Checking train connections", () => {
 
     describe("Find count of trips with certain amount of stops", function () {
 
-        const trainConnections = ["AB5", "BC4", "CD8", "DC8", "DE6", "AD5", "CE2", "EB3", "AE7"];
-
         it("Trip from C to C with maximimum 3 stops", function () {
 
             const tripPlanner = new Planner(trainConnections);
@@ -75,8 +73,6 @@ describe("Checking train connections", () => {
 
     describe("Find shortest connection length", function () {
 
-        const trainConnections = ["AB5", "BC4", "CD8", "DC8", "DE6", "AD5", "CE2", "EB3", "AE7"];
-
         it("Trip from A to C", function () {
 
             const tripPlanner = new Planner(trainConnections);
@@ -96,8 +92,6 @@ describe("Checking train connections", () => {
     });
 
     describe("Count possible connections between locations", function () {
-
-        const trainConnections = ["AB5", "BC4", "CD8", "DC8", "DE6", "AD5", "CE2", "EB3", "AE7"];
 
         it("Trip from A to C", function () {
 

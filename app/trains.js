@@ -67,22 +67,30 @@ class TripPlanner {
         /**
          * This is a JS implementation of the Bellman-Ford Algorithm
          * The idea is to find the shortest connections for each inner one 
-         * that then gets summed up
+         * that then gets summed up 
+         * Belman Ford assumed you have one the starting point for each calculation
+         * in my case though we start in different locations, so I need to adapt a little
+         * Also it calculates the shortest distances to all the other points but not to itself,
+         * so I add the last connection manually
          */
 
+        const start = route[0];
+        const stop = route[1];
+
         const memo = {
-            A: 0,
+            A: Number.POSITIVE_INFINITY,
             B: Number.POSITIVE_INFINITY,
             C: Number.POSITIVE_INFINITY,
             D: Number.POSITIVE_INFINITY,
             E: Number.POSITIVE_INFINITY
         };
+        memo[start] = 0;
 
         const cities = ["A", "B", "C", "D", "E"];
 
         for (const city of cities){
             //getting real connections from all available connections per city
-            const realConn = this.connectionGraph.filter((conn) => {
+            const realConn = this.connectionGraph.filter(conn => {
                 return conn.from === city;
             });
 
@@ -96,7 +104,20 @@ class TripPlanner {
                 }
             }
         }
-        return memo["C"];
+        if (start === stop){
+            //find connection before coming back to starting point
+            //and add last connection to it
+            let cityToCity = 0;
+            this.connectionGraph.forEach(conn => {
+                if (conn.to === stop){
+                    if (conn.from && isFinite(memo[conn.from])){
+                        cityToCity = memo[conn.from] + conn.distance;
+                    }
+                }
+            });
+            return cityToCity;
+        }
+        return memo[stop];
 
     }
 
@@ -104,20 +125,5 @@ class TripPlanner {
 
     }
 }
-/*
-class TripCache {
-    constructor (){
-        this.distanceObject = {
-            A: 0,
-            B: 0,
-            C: 0,
-            D: 0,
-            E: 0
-        };
-
-    }
-
-} */
-
 
 module.exports.TripPlanner = TripPlanner;

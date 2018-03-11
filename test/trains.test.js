@@ -41,7 +41,7 @@ describe("Checking train connections", () => {
 
         });
 
-        it("Distance between A-E-D should be correct", function () {
+        it("Distance between A-E-D should not be given", function () {
 
             const tripPlanner = new Planner(trainConnections);
 
@@ -93,11 +93,11 @@ describe("Checking train connections", () => {
 
     describe("Count possible connections between locations", function () {
 
-        it("Trip from A to C", function () {
+        it("Trip from C to C", function () {
 
             const tripPlanner = new Planner(trainConnections);
 
-            expect(tripPlanner.findConnections("AC")).to.equal(7);
+            expect(tripPlanner.findConnections("CC", "<= 30")).to.equal(7);
 
         });
 

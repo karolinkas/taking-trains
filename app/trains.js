@@ -1,6 +1,13 @@
 "use strict";
 
+/**
+ * TripPlanner class has all basic methods to do calculations
+ * on the graph of cities (nodes) which are connected with specified distances (edges)
+ */
 class TripPlanner {
+    /**
+    * @param {array} Array of Strings which stand for cities and their distances e.g. "AB5"
+    **/
     constructor (connections) {
         this.connectionsStrings = connections;
         this.parseConnectionStrings();
@@ -8,7 +15,9 @@ class TripPlanner {
     }
 
     /**
-    * Take strings of city codes and distances and create and array of objects for all connections
+    * Take strings of city codes and distances and create
+    * and array of objects for all connections that represents the directed graph
+    * and store it on the instance since it will be needed in many different methods
     */
     parseConnectionStrings () {
         this.connectionGraph = this.connectionsStrings.map(string => {
@@ -71,6 +80,7 @@ class TripPlanner {
          * connections is enough to solve the problem and make the tests pass
          * Since the algorithm should be functional for bigger graphs
          * I will implement the conditions in the next iteration
+         * @return {number} Count of possible trips
          */
         const start = route[0];
 
@@ -79,19 +89,19 @@ class TripPlanner {
         for (const city of this.cities){
 
             outGoingConnections[city] = {
-                number: 0,
+                count: 0,
                 to: []
             };
 
             this.connectionGraph.filter(conn => {
                 if (conn.from === city){
-                    outGoingConnections[city].number++;
+                    outGoingConnections[city].count++;
                     outGoingConnections[city].to.push(conn.to);
                 }
             });
         }
 
-        return outGoingConnections[start].number;
+        return outGoingConnections[start].count;
     }
 
     findShortestTrip (route){
@@ -103,8 +113,8 @@ class TripPlanner {
          * in my case though we start in different locations, so I need to adapt a little
          * Also it calculates the shortest distances to all the other points but not to itself,
          * so I add the last connection manually
+         * @return {number} Length of shortest trip
          */
-
         const start = route[0];
         const stop = route[1];
 
@@ -135,9 +145,11 @@ class TripPlanner {
             }
         }
         if (start === stop){
-            //if start and end point are the same
-            //find connection before coming back to the starting point
-            //and add last connection to it
+            /**
+            * if start and end point are the same
+            * find connection before coming back to the starting point
+            * and add last connection to it
+            */
             let cityToCity = 0;
             this.connectionGraph.forEach(conn => {
                 if (conn.to === stop){
@@ -151,9 +163,37 @@ class TripPlanner {
         return memo[stop];
 
     }
+    recursiveSearch (connections, distance){
+
+    }
 
     findConnections (route){
+        /**
+        * When looking at the examples of possible connections it became
+        * obvious that after more that 4 stops a smaller subset of connections is just being looped
+        * so I will try to find multiplications of these
+        */
 
+        const outGoingConnections = {};
+
+        for (const city of this.cities){
+
+            outGoingConnections[city] = {
+                count: 0,
+                distance: 0,
+                to: []
+            };
+
+            this.connectionGraph.filter(conn => {
+                if (conn.from === city){
+                    outGoingConnections[city].count++;
+                    outGoingConnections[city].distance += conn.distance;
+                    outGoingConnections[city].to.push(conn.to);
+                    
+                }
+            });
+        }
+        console.log(outGoingConnections);
     }
 }
 

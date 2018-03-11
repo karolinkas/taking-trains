@@ -163,8 +163,35 @@ class TripPlanner {
         return memo[stop];
 
     }
-    recursiveSearch (connections, distance){
+    recursiveSearch (connections, nextCity, currentCity){
+        const distanceCounter = {};
+        distanceCounter[currentCity] = 0;
 
+        while (distanceCounter[currentCity] < 30){
+            this.connectionGraph.filter(conn => {
+                if (conn.from === nextCity){
+                    connections[currentCity].count++;
+                    connections[currentCity].distance += conn.distance;
+                    distanceCounter[currentCity] += conn.distance;
+
+                    //create new nested object for each inner new connection
+                    const object = {};
+                    object[conn.to] = {
+                        count: connections[currentCity].count,
+                        distance: connections[currentCity].distance,
+                        to: []
+                    };
+
+                    connections[currentCity].to.push(object);
+                    if (connections[currentCity].distance < 30){
+
+                        this.allConnections = connections;
+                    }
+
+                    return connections;
+                }
+            });
+        }
     }
 
     findConnections (route){
@@ -173,27 +200,22 @@ class TripPlanner {
         * obvious that after more that 4 stops a smaller subset of connections is just being looped
         * so I will try to find multiplications of these
         */
-
+        this.allConnections = {};
         const outGoingConnections = {};
 
         for (const city of this.cities){
 
+            //initialise with with first connection
             outGoingConnections[city] = {
-                count: 0,
-                distance: 0,
-                to: []
+                count: 1,
+                distance: 5,
+                to: ["B"]
             };
+            const nextCityToSearch = outGoingConnections[city].to[outGoingConnections[city].to.length - 1];
+            this.recursiveSearch(outGoingConnections, nextCityToSearch, city);
 
-            this.connectionGraph.filter(conn => {
-                if (conn.from === city){
-                    outGoingConnections[city].count++;
-                    outGoingConnections[city].distance += conn.distance;
-                    outGoingConnections[city].to.push(conn.to);
-                    
-                }
-            });
         }
-        console.log(outGoingConnections);
+        return this.allConnections[route[0]].count;
     }
 }
 

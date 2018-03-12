@@ -73,15 +73,15 @@ class TripPlanner {
         }
     }
 
+    /**
+     * For a small directed graph like that surprisingly just counting the outgoing
+     * connections is enough to solve the problem
+     * Since the algorithm should be functional for bigger graphs
+     * I will implemented checking the the conditions as well
+     * @return {number} Count of possible trips
+     */
     getTripCount (route, condition) {
 
-        /**
-         * For a small directed graph like that surprisingly just counting the outgoing
-         * connections is enough to solve the problem and make the tests pass
-         * Since the algorithm should be functional for bigger graphs
-         * I will implement the conditions in the next iteration
-         * @return {number} Count of possible trips
-         */
         const start = route[0];
 
         const outGoingConnections = {};
@@ -93,28 +93,31 @@ class TripPlanner {
                 to: []
             };
 
+            //I didn't want to hardcode the conditions in here, so to make my work
+            //also applicable to other examples I created the condition dynamically
+            const dynamicCondition = `outGoingConnections[city].count ${condition}`;
+
             this.connectionGraph.filter(conn => {
-                if (conn.from === city){
+                if (conn.from === city && dynamicCondition){
                     outGoingConnections[city].count++;
                     outGoingConnections[city].to.push(conn.to);
                 }
             });
         }
-
         return outGoingConnections[start].count;
     }
 
+    /**
+     * This is a JS implementation of the Bellman-Ford Algorithm
+     * The idea is to find the shortest connections for each inner one
+     * that then gets summed up
+     * Belman Ford assumed you have one the starting point for each calculation
+     * in my case though we start in different locations, so I need to adapt a little
+     * Also it calculates the shortest distances to all the other points but not to itself,
+     * so I add the last connection manually
+     * @return {number} Length of shortest trip
+     */
     findShortestTrip (route){
-        /**
-         * This is a JS implementation of the Bellman-Ford Algorithm
-         * The idea is to find the shortest connections for each inner one
-         * that then gets summed up
-         * Belman Ford assumed you have one the starting point for each calculation
-         * in my case though we start in different locations, so I need to adapt a little
-         * Also it calculates the shortest distances to all the other points but not to itself,
-         * so I add the last connection manually
-         * @return {number} Length of shortest trip
-         */
         const start = route[0];
         const stop = route[1];
 
@@ -163,45 +166,61 @@ class TripPlanner {
         return memo[stop];
 
     }
-    recursiveSearch (connections, nextCity, currentCity){
+    /**
+     * @param {object} Initialised object of outgoing connections from each point
+     * @param {string} Code of next city
+     * @param {string} Code of current city
+     * @param {string} Condition
+     * @return {number} Count of trips fullfilling conditions
+     */
+    createLinkedList (connections, nextCity, currentCity, condition){
         const distanceCounter = {};
-        distanceCounter[currentCity] = 0;
+        distanceCounter[currentCity] = 5;
+        const dynamicCondition = `connections[currentCity].distance ${condition}`;
 
-        while (distanceCounter[currentCity] < 30){
-            this.connectionGraph.filter(conn => {
-                if (conn.from === nextCity){
+        while (eval(dynamicCondition) ){
+            this.connectionGraph.forEach(conn => {
+                if (conn.from === nextCity ){
                     connections[currentCity].count++;
                     connections[currentCity].distance += conn.distance;
                     distanceCounter[currentCity] += conn.distance;
 
                     //create new nested object for each inner new connection
-                    const object = {};
-                    object[conn.to] = {
-                        count: connections[currentCity].count,
-                        distance: connections[currentCity].distance,
-                        to: []
-                    };
-
-                    connections[currentCity].to.push(object);
                     if (connections[currentCity].distance < 30){
 
-                        this.allConnections = connections;
-                    }
+                        const object = {};
 
-                    return connections;
+                        object[conn.to] = new StopInCity(connections[currentCity].count, connections[currentCity].distance, []);
+
+                        connections[currentCity].to.push(object);
+
+                        return connections;
+                    }
                 }
             });
         }
+
+        return connections[currentCity].to[connections[currentCity].to.length - 1];
     }
 
-    findConnections (route){
+    findConnections (route, condition){
         /**
-        * When looking at the examples of possible connections it became
-        * obvious that after more that 4 stops a smaller subset of connections is just being looped
-        * so I will try to find multiplications of these
+        * This is pretty complex and I am trying to use an approach I have never used before
+        * Since we have multiple nested connections going of at each inner connection
+        * I am trying to create a linked list of connections which in JS is nothing else
+        * but a big nested object.
+        * First I thought I would probably need a recursive function but before even calling
+        * it inside of itself I realised that the distance had already reached 30 so I
+        * returned the count of connections from there.
+        * Basically this is using a greedy algorithm since we want to avoid looping through everything
+        * multiple times.
+        * @param {string} City code
+        * @param {string} condition string
+        * @return {number} Count of possible connections
         */
-        this.allConnections = {};
+
         const outGoingConnections = {};
+        let nextCities = {};
 
         for (const city of this.cities){
 
@@ -211,11 +230,25 @@ class TripPlanner {
                 distance: 5,
                 to: ["B"]
             };
-            const nextCityToSearch = outGoingConnections[city].to[outGoingConnections[city].to.length - 1];
-            this.recursiveSearch(outGoingConnections, nextCityToSearch, city);
+            const nextCityToSearch = "B";
+
+            nextCities = this.createLinkedList(outGoingConnections, nextCityToSearch, city, condition);
 
         }
-        return this.allConnections[route[0]].count;
+
+        return nextCities[route[0]].count;
+    }
+}
+/**
+* Each nested connections has to be tracked
+* FUTURE STEPS: add a method to this class that allows me
+* to iterate to the last element in the graph that full fills certain conditions
+*/
+class StopInCity {
+    constructor (count, distance, to){
+        this.count = count;
+        this.distance = distance;
+        this.to = to;
     }
 }
 

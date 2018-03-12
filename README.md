@@ -6,6 +6,10 @@ The local commuter railroad services a number of towns in Kiwiland.  Because of 
  
 The purpose of this problem is to help the railroad provide its customers with information about the routes.  In particular, you will compute the distance along a certain route, the number of different routes between two towns, and the shortest route between two towns.
 
+# Assumptions:
+I am assuming this should be scalable and is an application that should not only be there for the purpose of solving is exercise, therefore
+I rather assign object properties dynamically rather than hardcoding things.
+
 # Approach:
 
 I decided to solve this assignment using Node which allows me to easily turn the program into a web service in the future that can inform users about optimised train connections. 
@@ -67,4 +71,6 @@ Example output:
 - [ ] use Babel to turn ES6 into older JS versions that are supported in more environments
 
 - [ ] add a proper build process e.g. with gulp or webpack
+
+- [ ] start separating classes out into smaller files
 

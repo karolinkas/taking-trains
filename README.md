@@ -14,8 +14,9 @@ It was really exciting to apply it in JS to an actual problem.
 
 For the last part of the exercise I represented the directed graph as a linked list which compared to an array should have the advantage of being faster when adding nodes (here: cities)to it.  
 
-Test output after completing task;
-![Tests](./docs/test.png)
+Test output after completing task:
+
+![](docs/test.png)
 
 The whole task was a very intersting challenge for me since it requires some knowledge I have just recently acquired.
 

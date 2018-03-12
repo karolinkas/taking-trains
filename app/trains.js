@@ -225,12 +225,9 @@ class TripPlanner {
         for (const city of this.cities){
 
             //initialise with with first connection
-            outGoingConnections[city] = {
-                count: 1,
-                distance: 5,
-                to: ["B"]
-            };
-            const nextCityToSearch = "B";
+            outGoingConnections[city] = new StopInCity(1, this.connectionGraph[0].distance, [this.connectionGraph[0].to]);
+
+            const nextCityToSearch = this.connectionGraph[0].to;
 
             nextCities = this.createLinkedList(outGoingConnections, nextCityToSearch, city, condition);
 
@@ -241,14 +238,17 @@ class TripPlanner {
 }
 /**
 * Each nested connections has to be tracked
-* FUTURE STEPS: add a method to this class that allows me
-* to iterate to the last element in the graph that full fills certain conditions
+* since there is many stops it is a good idea to wrap them in a class
+* since they all share properties and methods
 */
 class StopInCity {
     constructor (count, distance, to){
         this.count = count;
         this.distance = distance;
         this.to = to;
+    }
+    findEndOfPath (end) {
+        return this.to.includes(end);
     }
 }
 

@@ -185,95 +185,50 @@ class TripPlanner {
         return memo[stop];
 
     }
-    /**
-     * @param {object} Initialised object of outgoing connections from each point
-     * @param {string} Code of next city
-     * @param {string} Code of current city
-     * @param {string} Condition
-     * @return {number} Count of trips fullfilling conditions
-     */
-    createLinkedList (connections, nextCity, currentCity, condition){
-        const distanceCounter = {};
-        distanceCounter[currentCity] = 5;
-        const dynamicCondition = `connections[currentCity].distance ${condition}`;
 
-        //create new nested object for each inner new connection
-        while (eval(dynamicCondition) ){
-            this.connectionGraph.forEach(conn => {
-                if (conn.from === nextCity ){
-                    //count number of connections
-                    connections[currentCity].count++;
-
-                    connections[currentCity].distance += conn.distance;
-                    distanceCounter[currentCity] += conn.distance;
-
-                    //make sure maximum distance doesn't added to the inner connections
-                    if (eval(dynamicCondition)){
-
-                        const object = {};
-
-                        //create new inner outgoing connection
-                        object[conn.to] = new StopInCity(connections[currentCity].count, connections[currentCity].distance, []);
-
-                        connections[currentCity].to.push(object);
-
-                        return connections;
-                    }
+    findPerCode (code, distanceCount){
+        while (distanceCount < 30){
+            this.list.totalLength++;
+            const inner = this.connectionGraph.filter(conn => {
+                if (code === conn.from){
+                    return conn;
                 }
+            }).map((innerConn, i) => {
+                distanceCount += innerConn.distance;
+                console.log(this.list.paths);
+                return {
+                    next: this.findPerCode(innerConn.to, distanceCount),
+                    distance: distanceCount,
+                    paths: this.list.paths[i] = this.list.paths[i] + code,
+                    length: this.list.totalLength
+                };
             });
+            if (inner.length > 0){
+                return inner;
+            } else {
+                return null;
+            }
         }
-
-        //in the future findEndOfPath() should traverse down the linked list to the last element
-        return connections[currentCity].to[connections[currentCity].to.length - 1];
     }
 
-    findConnections (route, condition){
-        /**
-        * This is pretty complex and I am trying to use an approach I have never used before
-        * Since we have multiple nested connections going of at each inner connection
-        * I am trying to create a linked list of connections which in JS is nothing else
-        * but a big nested object.
-        * First I thought I would probably need a recursive function but before even calling
-        * it inside of itself I realised that the distance had already reached 30 so I
-        * returned the count of connections from there.
-        * Basically this is using a greedy algorithm since we want to avoid looping through everything
-        * multiple times.
-        * @param {string} City code
-        * @param {string} condition string
-        * @return {number} Count of possible connections
-        */
-
-        const outGoingConnections = {};
-        let nextCities = {};
-
-        for (const city of this.cities){
-
-            //initialise with with first connection
-            outGoingConnections[city] = new StopInCity(1, this.connectionGraph[0].distance, [this.connectionGraph[0].to]);
-
-            const nextCityToSearch = this.connectionGraph[0].to;
-
-            nextCities = this.createLinkedList(outGoingConnections, nextCityToSearch, city, condition);
-
+    findLast (object) {
+        while (object.length < this.list.totalLength){
+            return object.next;
         }
+    }
 
-        return nextCities[route[0]].count;
+    findConnections (startEnd, condition) {
+        this.list = {
+            next: null,
+            distance: 0,
+            paths: ["C", "C"],
+            totalLength: 0
+        };
+        const distanceCount = 0;
+        this.list.next = this.findPerCode(startEnd[0], distanceCount);
+        console.log(this.list.next[0].next[0].next);
     }
 }
-/**
-* Each nested connections has to be tracked
-* since there is many stops it is a good idea to wrap them in a class
-* since they all share properties and methods
-*/
-class StopInCity {
-    constructor (count, distance, to){
-        this.count = count;
-        this.distance = distance;
-        this.to = to;
-    }
-    findEndOfPath (end) {
-        return this.to.includes(end);
-    }
-}
+
 
 module.exports.TripPlanner = TripPlanner;

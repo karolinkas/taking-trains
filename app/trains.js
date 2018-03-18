@@ -1,5 +1,8 @@
 "use strict";
 
+const Graph = require("../app/connections.js").ConnectionGraph;
+const StopInCity = require("../app/stop.js").StopInCity;
+
 /**
  * TripPlanner class has all basic methods to do calculations
  * on the graph of cities (nodes) which are connected with specified distances (edges)
@@ -10,37 +13,8 @@ class TripPlanner {
     **/
     constructor (connections) {
         this.connectionsStrings = connections;
-        this.uniqueCities = new Set();
-        this.parseConnectionStrings();
-    }
-
-    getAllCityCodes (code){
-        //to make sure the city codes are unique we use the JS Set Object
-        this.uniqueCities.add(code);
-    }
-
-    /**
-    * Take strings of city codes and distances and create
-    * and array of objects for all connections that represents the directed graph
-    * and store it on the instance since it will be needed in many different methods
-    */
-    parseConnectionStrings () {
-        this.connectionGraph = this.connectionsStrings.map(string => {
-            const startCity = string[0];
-            const stopCity = string[1];
-
-            this.getAllCityCodes(startCity);
-            this.getAllCityCodes(stopCity);
-
-            const distance = string.slice(2, string.length);
-            return {
-                from: startCity,
-                to: stopCity,
-                distance: Number(distance)
-            };
-        });
-
-        this.cities = Array.from(this.uniqueCities).sort();
+        this.connectionGraph = new Graph(this.connectionsStrings).connectionGraph;
+        this.cities = new Graph(this.connectionsStrings).cities;
     }
 
     /**
@@ -90,6 +64,8 @@ class TripPlanner {
      * connections is enough to solve the problem
      * Since the algorithm should be functional for bigger graphs
      * I will implemented checking the the conditions as well
+     * @param {string} Route string
+     * @param {string} Condition string
      * @return {number} Count of possible trips
      */
     getTripCount (route, condition) {
@@ -128,6 +104,7 @@ class TripPlanner {
      * by setting the starting point manually.
      * Also it calculates the shortest distances to all the other points but not to itself,
      * so I add the last connection manually.
+     * @param {string} String of city codes
      * @return {number} Length of shortest trip
      */
     findShortestTrip (route){
@@ -187,63 +164,79 @@ class TripPlanner {
     }
 
     collectUniqueTrips (trip){
-        this.tripSet.add(trip);
+        if (trip.slice(-1) === this.tripEnd){
+            this.uniqueTrips.add(trip);
+        }
     }
 
-    findPerCode (code, distanceCount, previous){
-        while (previous.distance < 30){
-            this.list.totalLength++;
-            //previous connections are being shared by both children
+    /**
+    * Recursive function that creates a doubly linked list
+    * which is required here to be able to have references to previous
+    * connections to make sure that the distance limit doesn't get
+    * exceeded and to remember the full trip to check if all conditions are
+    * beeing fulfilled.
+    **/
+    createLinkedList (code, previous, condition){
+        const dynamicCondition = `${previous.distance} ${condition}`;
+        while (eval(dynamicCondition)){
+
+            /**
+            * Find all further connections from a city
+            * and track their distance, the previous connection and concatenate a string
+            * that stores the cities already passed during the trip
+            */
             const inner = this.connectionGraph.filter(conn => {
                 if (code === conn.from){
                     return conn;
                 }
             }).map((innerConn, i) => {
-                distanceCount += innerConn.distance;
-                const current = {
-                    next: undefined,
-                    distance: previous.distance + innerConn.distance,
-                    path: previous.path + innerConn.to,
-                    length: previous.length++,
-                    prev: previous
-                };
-                this.collectUniqueTrips(current.path);
-                current.next = this.findPerCode(innerConn.to, distanceCount, current);
-                return current;
+                const newDistance = previous.getCurrentDistance() + innerConn.distance;
+                const newPath = previous.getCurrentPath() + innerConn.to;
+
+                //create instance for each inner connection
+                const current = new StopInCity(undefined, newDistance, newPath, previous);
+
+                //add inner connection only if it also doesn't exed total trip limit
+                const tripLimit = `${current.distance} ${condition}`;
+                if (eval(tripLimit)){
+                    this.collectUniqueTrips(current.path);
+                    current.next = this.createLinkedList(innerConn.to, current, condition);
+                    return current;
+                }
             });
-            if (inner.length > 0){
-                return inner;
-            } else {
-                return null;
-            }
+            return inner;
+
         }
     }
 
+    /**
+    * Calls recursive function to make a plan of "train connections".
+    * @param {string} String of city codes
+    * @param {string} String that contains condition
+    * @return {number} Count of unique trips that fullfill conditions
+    **/
     findConnections (startEnd, condition) {
 
-        //create an empty set
-        //this is where we will be collecting all possible
-        //combinations of paths that fulfill our conditions
-        this.tripSet = new Set();
+        this.tripStart = startEnd[0];
+        this.tripEnd = startEnd[1];
 
-        this.list = {
-            next: null,
-            distance: 0,
-            path: "C",
-            totalLength: 0,
-            length: 0,
-            prev: null
-        };
-        const distanceCount = 0;
+        /**
+        * Create an empty set
+        * this is where we will be collecting all possible
+        * combinations of paths that fulfill our conditions
+        **/
+        this.uniqueTrips = new Set();
+
+        //create first instance to know where all connections will be coming from
+        //since we don't not where the train connections are going to yet next is null,
+        //as is previous since there will never be any previous connection in that instance
+        this.list = new StopInCity(null, 0, this.start, null);
 
         //start looking for all possible paths through the graph
-        this.list.next = this.findPerCode(startEnd[0], distanceCount, this.list);
+        this.list.next = this.createLinkedList(this.tripStart, this.list, condition);
 
-        console.log(Array.from(this.tripSet));
-        //return count of unique connections
-        //check connections end in C
+        return Array.from(this.uniqueTrips).length;
     }
 }
-
 
 module.exports.TripPlanner = TripPlanner;

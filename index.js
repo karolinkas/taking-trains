@@ -12,11 +12,11 @@ const response = {
     3: tripPlanner.getDistance("ADC"),
     4: tripPlanner.getDistance("AEBCD"),
     5: tripPlanner.getDistance("AED"),
-    6: tripPlanner.getTripCount("CC", ">= 3"),
+    6: tripPlanner.getTripCount("CC", "< 3"),
     7: tripPlanner.getTripCount("AC", "== 4"),
     8: tripPlanner.findShortestTrip("AC"),
     9: tripPlanner.findShortestTrip("BB"),
-    10: tripPlanner.findConnections("CC", "<= 30")
+    10: tripPlanner.findConnections("CC", "< 30")
 };
 
 console.log(response);

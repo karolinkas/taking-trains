@@ -57,7 +57,7 @@ describe("Checking train connections", () => {
 
             const tripPlanner = new Planner(trainConnections);
 
-            expect(tripPlanner.getTripCount("CC", ">= 3")).to.equal(2);
+            expect(tripPlanner.getTripCount("CC", "< 3")).to.equal(2);
 
         });
 
@@ -97,7 +97,7 @@ describe("Checking train connections", () => {
 
             const tripPlanner = new Planner(trainConnections);
 
-            expect(tripPlanner.findConnections("CC", "<= 30")).to.equal(7);
+            expect(tripPlanner.findConnections("CC", "< 30")).to.equal(7);
 
         });
 

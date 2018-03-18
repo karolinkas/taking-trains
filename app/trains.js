@@ -186,22 +186,30 @@ class TripPlanner {
 
     }
 
-    findPerCode (code, distanceCount){
-        while (distanceCount < 30){
+    collectUniqueTrips (trip){
+        this.tripSet.add(trip);
+    }
+
+    findPerCode (code, distanceCount, previous){
+        while (previous.distance < 30){
             this.list.totalLength++;
+            //previous connections are being shared by both children
             const inner = this.connectionGraph.filter(conn => {
                 if (code === conn.from){
                     return conn;
                 }
             }).map((innerConn, i) => {
                 distanceCount += innerConn.distance;
-                console.log(this.list.paths);
-                return {
-                    next: this.findPerCode(innerConn.to, distanceCount),
-                    distance: distanceCount,
-                    paths: this.list.paths[i] = this.list.paths[i] + code,
-                    length: this.list.totalLength
+                const current = {
+                    next: undefined,
+                    distance: previous.distance + innerConn.distance,
+                    path: previous.path + innerConn.to,
+                    length: previous.length++,
+                    prev: previous
                 };
+                this.collectUniqueTrips(current.path);
+                current.next = this.findPerCode(innerConn.to, distanceCount, current);
+                return current;
             });
             if (inner.length > 0){
                 return inner;
@@ -211,22 +219,29 @@ class TripPlanner {
         }
     }
 
-    findLast (object) {
-        while (object.length < this.list.totalLength){
-            return object.next;
-        }
-    }
-
     findConnections (startEnd, condition) {
+
+        //create an empty set
+        //this is where we will be collecting all possible
+        //combinations of paths that fulfill our conditions
+        this.tripSet = new Set();
+
         this.list = {
             next: null,
             distance: 0,
-            paths: ["C", "C"],
-            totalLength: 0
+            path: "C",
+            totalLength: 0,
+            length: 0,
+            prev: null
         };
         const distanceCount = 0;
-        this.list.next = this.findPerCode(startEnd[0], distanceCount);
-        console.log(this.list.next[0].next[0].next);
+
+        //start looking for all possible paths through the graph
+        this.list.next = this.findPerCode(startEnd[0], distanceCount, this.list);
+
+        console.log(Array.from(this.tripSet));
+        //return count of unique connections
+        //check connections end in C
     }
 }
 

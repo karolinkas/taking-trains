@@ -6,12 +6,9 @@ The local commuter railroad services a number of towns in Kiwiland.  Because of 
  
 The purpose of this problem is to help the railroad provide its customers with information about the routes.  In particular, you will compute the distance along a certain route, the number of different routes between two towns, and the shortest route between two towns.
 
-# Assumptions:
-I am assuming this should be scalable and is an application that should not only be there for the purpose of solving is exercise, therefore I rather assign object properties dynamically rather than hardcoding things. 
-
 # Approach:
 
-I decided to solve this assignment using Node which allows me to easily turn the program into a web service in the future that can inform users about optimised train connections. 
+I decided to solve this Exercise using Node which allows me to easily turn the program into a web service in the future that can inform users about optimised train connections. 
 
 As suggested in the task specifcations I used TDD which I really enjoy since it forces me to structure the task and therefore the future code beforehand. Also it makes debugging the program easier while adding new features. I picked the directed graph assigment since it is something I have never done before. I always had a special interest for data visualisation, so any issue that offers itself to be solved visually is very attractive to me. 
 
@@ -54,16 +51,3 @@ node index
 Example output:
 ![Tests](./docs/output.png)
 
-
-# Next possible steps:
-- [ ] test also helper functions e.g. createLinkedList()
-
-- [ ] create a shared table (between different substasks) to memorise properties of connections already passed which ideally is build by it's own class to avoid repetitions
-
-- [ ] create an API to allow requesting different functionalities of the program and provide it to a front end application that visualises train connections
-
-- [ ] turn app into a microservice that is inside of a container to be linked with other apps in a bigger cluster of services
-
-- [ ] use Babel to turn ES6 into older JS versions that are supported in more environments
-
-- [ ] add a proper build process e.g. with gulp or webpack
